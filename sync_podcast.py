@@ -37,7 +37,9 @@ def load_json(path: pathlib.Path, default):
 
 
 def run_json(args: list[str]) -> dict:
-    proc = subprocess.run(args, check=True, text=True, capture_output=True)
+    proc = subprocess.run(args, text=True, capture_output=True)
+    if proc.returncode:
+        raise RuntimeError(proc.stderr.strip() or f"yt-dlp exited {proc.returncode}")
     return json.loads(proc.stdout)
 
 
@@ -193,6 +195,8 @@ def main() -> int:
             episode, audio_path = download_episode(video_id, config, repository)
         except Exception as exc:
             print(f"Warning: skipped {video_id}: {exc}", file=sys.stderr)
+            if any(word in str(exc).lower() for word in ["not a bot", "sign in", "429", "403"]):
+                raise RuntimeError("YouTube access blocked; manual review required.") from exc
             continue
         episodes.append(episode)
         known.add(video_id)
