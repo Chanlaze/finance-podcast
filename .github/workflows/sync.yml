@@ -1,20 +1,15 @@
 name: Sync podcast
 
 on:
-  push:
-    paths:
-      - "sync_podcast.py"
-      - ".github/workflows/sync.yml"
-      - "requirements.txt"
-      - "config.json"
   workflow_dispatch:
     inputs:
       max_new_episodes:
         description: Maximum new episodes for this run
         required: false
         default: "20"
-  schedule:
-    - cron: "17 */12 * * *"
+# Automatic sync paused: YouTube requires human/account verification on the hosted runner.
+# Restore only after a supported source or authorised execution setup is available.
+
 
 permissions:
   contents: write
