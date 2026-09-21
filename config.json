@@ -1,0 +1,10 @@
+{
+  "playlist_url": "https://youtube.com/playlist?list=PLZzk3lr_ZodLrQhSovjZHIHpoypdx6yLE",
+  "podcast_title": "Finance Podcast",
+  "podcast_description": "Personal audio feed generated from an authorised YouTube playlist.",
+  "language": "zh-HK",
+  "author": "Finance730",
+  "release_tag": "podcast-media",
+  "max_new_episodes_per_run": 20
+}
+

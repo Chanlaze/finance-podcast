@@ -1,0 +1,5 @@
+work/
+upload_manifest.json
+__pycache__/
+*.pyc
+

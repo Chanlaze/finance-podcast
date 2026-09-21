@@ -1,0 +1,96 @@
+name: Sync podcast
+
+on:
+  push:
+    paths:
+      - "sync_podcast.py"
+      - ".github/workflows/sync.yml"
+      - "requirements.txt"
+      - "config.json"
+  workflow_dispatch:
+    inputs:
+      max_new_episodes:
+        description: Maximum new episodes for this run
+        required: false
+        default: "20"
+  schedule:
+    - cron: "17 */12 * * *"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: finance-podcast-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    timeout-minutes: 120
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.changes.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg jq
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Download new episodes and build feed
+        env:
+          MAX_NEW_EPISODES: ${{ inputs.max_new_episodes || '20' }}
+        run: python sync_podcast.py
+      - name: Create media release if needed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view podcast-media >/dev/null 2>&1 || \
+            gh release create podcast-media --title "Podcast media" --notes "Audio files used by the personal RSS feed."
+      - name: Upload new audio
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          jq -r '.[]' upload_manifest.json | while IFS= read -r asset; do
+            [ -z "$asset" ] || gh release upload podcast-media "$asset" --clobber
+          done
+      - name: Commit feed state
+        id: changes
+        run: |
+          git add data/episodes.json docs/feed.xml docs/index.html docs/.nojekyll
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Update podcast feed"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: sync
+    steps:
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
