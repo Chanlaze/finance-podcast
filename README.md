@@ -1,36 +1,33 @@
 # Finance Podcast
 
-Personal podcast feed generated from an authorised YouTube playlist.
+Local Windows downloader for an authorised YouTube playlist. Audio is public in
+`podcast-media` GitHub Releases. GitHub Pages publishes `main:/docs`.
+The legacy `sync.yml` workflow is disabled: keep it disabled.
 
-## What it does
+RSS: https://chanlaze.github.io/finance-podcast/feed.xml
 
-- Checks the configured playlist twice daily and can also be run manually.
-- Converts newly discovered videos to MP3 with `yt-dlp` and FFmpeg.
-- Stores audio as assets in the `podcast-media` GitHub Release.
-- Rebuilds `docs/feed.xml` and a small subscription page.
-- Deploys the `docs` folder with GitHub Pages.
+## Local operation
 
-## One-time GitHub setup
+Python 3.13, `.venv` with `requirements.txt`, FFmpeg and ffprobe in `.tools`,
+Node.js, Git and an authenticated GitHub CLI are required. Machine-specific
+paths are in ignored `local-settings.json`. Sign in locally with `gh auth login`
+if needed. Never commit credentials or cookies.
 
-1. Create or rename the public repository to `finance-podcast`.
-2. Add all files in this project to its default branch.
-3. Open **Settings → Actions → General → Workflow permissions** and select
-   **Read and write permissions**.
-4. Open **Settings → Pages → Build and deployment → Source** and select
-   **GitHub Actions**.
-5. Open **Actions → Sync podcast → Run workflow** for the first import.
+Single import: `.venv\Scripts\python.exe local_sync.py --limit 1 --publish`
 
-The podcast feed will be:
+`run-local.ps1` processes at most three unseen episodes per run in playlist order,
+prevents overlapping scheduled runs, and writes ignored `logs/` files. Existing
+published IDs are skipped. Local audio and metadata are reused after failure;
+partial downloads resume. Release assets are never overwritten. Public SHA-256
+and byte length must match before an episode is recorded. MP3 files are fully
+decoded and compared against source duration before upload.
 
-`https://chanlaze.github.io/finance-podcast/feed.xml`
+Retain `data/episodes.json` and `work/`. A failed push leaves the local commit for
+the next run. Review remote changes if push is rejected; no force-push is used.
+Do not run concurrent manual imports or sync from another machine.
 
-The first and later runs import up to 20 new episodes each. Re-run the workflow
-until the initial backlog is complete. Afterwards, the scheduled runs keep the
-feed updated automatically.
+The Windows task needs this user logged in and an internet connection. Sleep or
+shutdown may delay execution. Inspect task result and logs for failures. If
+YouTube requests verification, complete it locally; no password is stored here.
 
-## Important
-
-The Pages site and Release assets are publicly reachable by anyone who has the
-URL. Use this project only for content that you own or are authorised to
-download and re-host.
-
+The page uses noindex,nofollow and robots.txt. Audio and RSS remain public.

@@ -3,3 +3,8 @@ upload_manifest.json
 __pycache__/
 *.pyc
 
+
+.venv/
+.tools/
+logs/
+local-settings.json

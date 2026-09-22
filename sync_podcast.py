@@ -215,5 +215,6 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    from local_sync import main as local_main
+    raise SystemExit(local_main())
 
