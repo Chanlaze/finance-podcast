@@ -15,6 +15,9 @@ os.chdir(ROOT)
 os.environ['PYTHONUTF8'] = '1'
 os.environ['PATH'] = str(ROOT / '.tools') + os.pathsep + os.environ['PATH']
 settings = podcast.load_json(ROOT / 'local-settings.json', {})
+for key in ('git_dir', 'gh_dir'):
+    if settings.get(key):
+        os.environ['PATH'] = settings[key] + os.pathsep + os.environ['PATH']
 if settings.get('git_exec_path'):
     os.environ['GIT_EXEC_PATH'] = settings['git_exec_path']
 

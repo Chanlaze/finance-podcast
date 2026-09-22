@@ -31,3 +31,6 @@ shutdown may delay execution. Inspect task result and logs for failures. If
 YouTube requests verification, complete it locally; no password is stored here.
 
 The page uses noindex,nofollow and robots.txt. Audio and RSS remain public.
+
+Windows task: FinancePodcast-LocalSync, daily 09:00 and 21:00 Hong Kong time.
+It uses the current interactive user and does not store a password.
